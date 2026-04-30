@@ -2,44 +2,37 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>黄帝内经 AR 室内测试</title>
-    <!-- 引入基础框架 -->
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <!-- 引入针对图片识别的 AR.js NFT 插件 -->
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+    <title>黄帝内经 AR 测试版</title>
+    <!-- 使用国内极速镜像引用的脚本 -->
+    <script src="https://lib.baomitu.com/aframe/1.2.0/aframe-master.min.js"></script>
+    <script src="https://cdn.staticfile.org/ar.js/3.3.2/aframe-ar-nft.js"></script>
+    <!-- 调试工具：会在手机右下角出现绿色按钮，点击看报错 -->
+    <script src="https://cdn.staticfile.org/eruda/2.4.1/eruda.min.js"></script>
+    <script>eruda.init();</script>
   </head>
 
   <body style="margin: 0; overflow: hidden;">
-    <!-- 场景设置：启用摄像头，关闭多余调试信息 -->
-    <a-scene
-      embedded
-      arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
-    >
-      <!-- NFT 锚点：url 指向 data 文件夹下的文件前缀，不加后缀 -->
+    <a-scene embedded arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
+      
+      <!-- 注意：url 路径一定要确认能通过浏览器直接访问到 -->
       <a-nft
         type="nft"
-        url="./data/yellow-emperor"
+        url="./data/yellow-emperor" 
         smooth="true"
-        id="nft-marker"
         smoothCount="10"
         smoothTolerance=".01"
-        smoothThreshold="5"
-      >
-        <!-- 
-           当识别到图片时，显示以下内容：
-           position: 0 0 0 代表在图片中心。
-           rotation: -90 0 0 让图标平行于纸面。
-           scale: NFT 模式单位较大，建议先设为 1000 1000 1000 
-        -->
-        <a-image
-          src="./icon.png"
-          position="0 0 0"
-          rotation="-90 0 0"
-          scale="1000 1000 1000"
-        ></a-image>
+        smoothThreshold="5">
+        
+        <!-- 将图标放大，并稍微向上偏移 (position Y 轴) -->
+        <a-image 
+            src="icon.png" 
+            position="0 100 0" 
+            rotation="-90 0 0" 
+            scale="500 500 500">
+        </a-image>
+
       </a-nft>
 
-      <!-- 静态摄像头 -->
       <a-entity camera></a-entity>
     </a-scene>
   </body>
