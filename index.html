@@ -1,61 +1,57 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
     <meta charset="utf-8">
-    <title>黄帝内经 AR 室内测试</title>
-    <!-- 使用国内最稳定的 CDN 镜像，解决摄像头打不开的问题 -->
-    <script src="https://cdn.staticfile.org/aframe/1.2.0/aframe-master.min.js"></script>
-    <script src="https://cdn.staticfile.org/ar.js/3.3.2/aframe-ar-nft.js"></script>
-    
-    <style>
-        .arjs-loader {
-            height: 100%; width: 100%; position: absolute; top: 0; left: 0;
-            background-color: rgba(0, 0, 0, 0.8); z-index: 9999;
-            display: flex; justify-content: center; align-items: center;
-        }
-        .arjs-loader div { text-align: center; font-size: 1.25em; color: white; font-family: sans-serif; }
-    </style>
+    <title>黄帝内经 AR 调试版</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/aframe/1.2.0/aframe-master.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/ar.js/3.3.2/aframe-ar-nft.js"></script>
 </head>
 
 <body style="margin: 0; overflow: hidden;">
-    <!-- 加载遮罩：提示数据正在下载 -->
-    <div class="arjs-loader">
-        <div>正在初始化 AR 引擎...<br>请确保已允许摄像头权限</div>
+    <!-- 增加一个调试文本框，直接在手机屏幕上显示错误 -->
+    <div id="debug-text" style="position: absolute; top: 10px; left: 10px; z-index: 10001; color: red; background: white; font-size: 12px;">
+        状态: 正在建立连接...
     </div>
 
-    <!-- AR 场景主体 -->
-    <a-scene
-        vr-mode-ui="enabled: false;"
-        renderer="logarithmicDepthBuffer: true;"
-        embedded
-        arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
+    <div class="arjs-loader" id="loader" style="height: 100%; width: 100%; position: absolute; top: 0; left: 0; background-color: rgba(0, 0, 0, 0.8); z-index: 9999; display: flex; justify-content: center; align-items: center; color: white;">
+        <div>数据下载中，请稍候...</div>
+    </div>
 
-        <!-- NFT 锚点：已按照您的要求修改前缀为 yellow-emperor -->
+    <a-scene embedded arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
+        <!-- 注意：确保 data 文件夹下有 yellow-emperor.fset 等文件 -->
         <a-nft
+            id="nft-node"
             type="nft"
             url="./data/yellow-emperor"
-            smooth="true"
-            smoothCount="10"
-            smoothTolerance=".01"
-            smoothThreshold="5">
-            
-            <!-- 虚拟图标：放置在中心，并放大到 600 倍 -->
-            <a-image
-                src="./icon.png"
-                position="0 0 0"
-                rotation="-90 0 0"
-                scale="600 600 600">
-            </a-image>
+            smooth="true">
+            <a-image src="./icon.png" position="0 0 0" rotation="-90 0 0" scale="500 500 500"></a-image>
         </a-nft>
-
-        <!-- 激活摄像头 -->
         <a-entity camera></a-entity>
     </a-scene>
 
     <script>
-        // 当识别图数据 (yellow-emperor.fset 等) 加载完成后，自动隐藏黑色遮罩
-        window.addEventListener('arjs-nft-loaded', function() {
-            document.querySelector('.arjs-loader').style.display = 'none';
+        const debug = document.getElementById('debug-text');
+        const loader = document.getElementById('loader');
+
+        // 监听 NFT 加载状态
+        window.addEventListener('arjs-nft-loaded', () => {
+            debug.innerHTML = "状态: 识别数据加载完成！请对准图片";
+            debug.style.color = "green";
+            loader.style.display = 'none';
+        });
+
+        // 如果 30 秒还没加载完，给出明确提示
+        setTimeout(() => {
+            if (loader.style.display !== 'none') {
+                debug.innerHTML = "错误: 下载数据超时，请尝试切换手机网络或使用梯子。";
+            }
+        }, 30000);
+
+        // 检查文件路径是否可能错误
+        fetch('./data/yellow-emperor.fset').then(response => {
+            if (!response.ok) debug.innerHTML = "错误: 找不到 yellow-emperor.fset 文件！";
+        }).catch(err => {
+            debug.innerHTML = "错误: 无法连接服务器";
         });
     </script>
 </body>
