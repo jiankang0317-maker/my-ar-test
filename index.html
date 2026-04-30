@@ -2,33 +2,40 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <!-- 引入 A-Frame 和 AR.js 的 NFT 版本 -->
+    <title>黄帝内经 AR 室内测试</title>
+    <!-- 引入基础框架 -->
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <!-- 引入针对图片识别的 AR.js NFT 插件 -->
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
-    <title>黄帝内经 AR 测试</title>
   </head>
 
   <body style="margin: 0; overflow: hidden;">
-    <!-- 开启 AR 场景，禁用调试界面 -->
-    <a-scene embedded arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
-      
-      <!-- NFT 追踪器：指向你上传的那三个文件的路径（不加后缀） -->
+    <!-- 场景设置：启用摄像头，关闭多余调试信息 -->
+    <a-scene
+      embedded
+      arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
+    >
+      <!-- NFT 锚点：url 指向 data 文件夹下的文件前缀，不加后缀 -->
       <a-nft
         type="nft"
-        url="你的GitHub地址前缀/黄帝内经" 
+        url="./data/emperor"
         smooth="true"
         smoothCount="10"
         smoothTolerance=".01"
-        smoothThreshold="5">
-        
-        <!-- 这里是你想显示的图标。position 是坐标，scale 是缩放 -->
-        <a-image 
-            src="icon.png" 
-            position="0 0 0" 
-            rotation="-90 0 0" 
-            scale="100 100 100">
-        </a-image>
-
+        smoothThreshold="5"
+      >
+        <!-- 
+           当识别到图片时，显示以下内容：
+           position: 0 0 0 代表在图片中心。
+           rotation: -90 0 0 让图标平行于纸面。
+           scale: NFT 模式单位较大，建议先设为 100 100 100 
+        -->
+        <a-image
+          src="./icon.png"
+          position="0 0 0"
+          rotation="-90 0 0"
+          scale="100 100 100"
+        ></a-image>
       </a-nft>
 
       <!-- 静态摄像头 -->
