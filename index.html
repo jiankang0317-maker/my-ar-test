@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <title>黄帝内经 AR 室内测试</title>
-    <!-- 使用 unpkg 替代 jsdelivr，国内访问相对稳定 -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>黄帝内经 AR 体验</title>
+
     <script src="https://unpkg.com/aframe@1.2.0/dist/aframe-master.min.js"></script>
-    <!-- 使用官方推荐的备用 githack 链接 -->
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
-    
+
     <style>
-      /* 增加一个加载提示框，防止白屏让用户以为死机了 */
+      /* ========== 加载提示 ========== */
       .arjs-loader {
         height: 100%;
         width: 100%;
@@ -26,42 +26,245 @@
         text-align: center;
         font-size: 1.25em;
         color: white;
+        line-height: 2;
+      }
+
+      /* ========== 弹窗样式 ========== */
+      .popup-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 10000;
+        justify-content: center;
+        align-items: center;
+      }
+      .popup-overlay.active {
+        display: flex;
+      }
+      .popup-content {
+        background: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        width: 85%;
+        max-width: 400px;
+        max-height: 80vh;
+        overflow-y: auto;
+        position: relative;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+      .popup-close {
+        position: absolute;
+        top: 12px;
+        right: 16px;
+        font-size: 24px;
+        cursor: pointer;
+        color: #999;
+        border: none;
+        background: none;
+        padding: 4px 8px;
+      }
+      .popup-close:hover {
+        color: #333;
+      }
+      .popup-content h2 {
+        margin: 0 0 12px 0;
+        font-size: 1.3em;
+        color: #333;
+      }
+      .popup-content img {
+        width: 100%;
+        border-radius: 8px;
+        margin: 12px 0;
+      }
+      .popup-content p {
+        font-size: 0.95em;
+        line-height: 1.8;
+        color: #555;
+        margin: 8px 0;
+      }
+      .popup-content .tag {
+        display: inline-block;
+        background: #f0f7ff;
+        color: #1a73e8;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        margin: 4px 4px 4px 0;
+      }
+
+      /* ========== 点击提示 ========== */
+      .tap-hint {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 10px 24px;
+        border-radius: 25px;
+        font-size: 0.9em;
+        z-index: 100;
+        pointer-events: none;
       }
     </style>
   </head>
 
-  <body style="margin: 0; overflow: hidden;">
+  <body style="margin: 0; overflow: hidden">
     <!-- 加载提示 -->
     <div class="arjs-loader">
-      <div>正在加载 AR 模型，请稍候...<br>(请允许使用摄像头)</div>
+      <div>
+        📷 正在加载 AR 场景...<br />
+        请允许使用摄像头<br />
+        <small style="color: #aaa">首次加载可能需要 10~20 秒</small>
+      </div>
     </div>
 
-    <!-- 场景设置 -->
+    <!-- 底部点击提示 -->
+    <div class="tap-hint" id="tapHint">👆 识别成功！点击小人查看详情</div>
+
+    <!-- ========== 弹窗内容（你可以自由修改这里的图文） ========== -->
+    <div class="popup-overlay" id="popupOverlay">
+      <div class="popup-content">
+        <button class="popup-close" id="popupClose">✕</button>
+
+        <h2>📖 黄帝内经</h2>
+
+        <!-- 详情图片：替换成你自己的图片地址 -->
+        <img src="./yellow-detail.jpg" alt="黄帝内经介绍" />
+
+        <div>
+          <span class="tag">中医经典</span>
+          <span class="tag">养生智慧</span>
+          <span class="tag">传统文化</span>
+        </div>
+
+        <p>
+          《黄帝内经》是中国最早的医学典籍，分为《素问》和《灵枢》两部分。
+          它以黄帝与岐伯等臣子对话的形式，系统阐述了中医的基础理论。
+        </p>
+        <p>
+          书中涵盖了阴阳五行、脏腑经络、病因病机、诊法治则、
+          养生防病等内容，被誉为中医学的奠基之作。
+        </p>
+        <p>
+          <strong>核心思想：</strong>
+          "上工治未病"——最好的医生是在疾病发生之前就进行预防和调理。
+        </p>
+        <p>
+          <strong>历史地位：</strong>
+          与《难经》《伤寒杂病论》《神农本草经》并称为中医四大经典。
+        </p>
+      </div>
+    </div>
+
+    <!-- ========== AR 场景 ========== -->
     <a-scene
-      vr-mode-ui="enabled: false;"
-      renderer="logarithmicDepthBuffer: true;"
+      vr-mode-ui="enabled: false"
+      renderer="logarithmicDepthBuffer: true; precision: mediump;"
       embedded
       arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
     >
-      <!-- NFT 锚点 -->
+      <!-- NFT 锚点：增强平滑参数 -->
       <a-nft
         type="nft"
         url="./data/yellow-emperor"
         smooth="true"
-        smoothCount="10"
-        smoothTolerance=".01"
-        smoothThreshold="5"
+        smoothCount="20"
+        smoothTolerance="0.005"
+        smoothThreshold="10"
       >
+        <!--
+          icon 位置说明（NFT 模式下单位较大）：
+          position="x y z"
+            x: 左右（正=右）
+            y: 上下（正=上方浮起）
+            z: 前后（正=向你靠近）
+          你可以自由调整这三个值来改变 icon 的位置
+          
+          示例：
+            position="0 0 0"       → 图片正中央
+            position="150 0 0"     → 偏右
+            position="-150 0 0"    → 偏左
+            position="0 0 50"      → 向上浮起
+            position="150 0 50"    → 右上方
+        -->
         <a-image
+          id="arIcon"
           src="./icon.jpg"
           position="0 0 0"
           rotation="-90 0 0"
-          scale="100 100 100" 
+          scale="100 100 100"
+          transparent="true"
+          alpha-test="0.5"
+          class="clickable"
         ></a-image>
       </a-nft>
 
-      <!-- 静态摄像头 -->
+      <!-- 摄像头 -->
       <a-entity camera></a-entity>
     </a-scene>
+
+    <!-- ========== 交互脚本 ========== -->
+    <script>
+      // 等待场景加载完成
+      const scene = document.querySelector("a-scene");
+      const tapHint = document.getElementById("tapHint");
+      const popupOverlay = document.getElementById("popupOverlay");
+      const popupClose = document.getElementById("popupClose");
+      const arIcon = document.getElementById("arIcon");
+
+      // 默认隐藏点击提示
+      tapHint.style.display = "none";
+
+      // NFT 被识别到时，显示提示
+      const nftEl = document.querySelector("a-nft");
+      if (nftEl) {
+        nftEl.addEventListener("markerFound", function () {
+          tapHint.style.display = "block";
+        });
+        nftEl.addEventListener("markerLost", function () {
+          tapHint.style.display = "none";
+        });
+      }
+
+      // 方法1：点击 AR 空间中的 icon（部分手机支持）
+      if (arIcon) {
+        arIcon.addEventListener("click", function () {
+          popupOverlay.classList.add("active");
+        });
+      }
+
+      // 方法2：点击屏幕任意位置也能触发弹窗（更可靠的备用方案）
+      // 因为部分手机上 a-image 的 click 事件不稳定
+      document.addEventListener("click", function (e) {
+        // 如果弹窗已经打开，不重复触发
+        if (popupOverlay.classList.contains("active")) return;
+        // 如果点击的是关闭按钮，不触发
+        if (e.target === popupClose) return;
+
+        // 用 raycaster 检测是否点到了 AR 元素
+        // 简化方案：当 NFT 被识别时，点击屏幕就弹窗
+        if (tapHint.style.display === "block") {
+          popupOverlay.classList.add("active");
+        }
+      });
+
+      // 关闭弹窗
+      popupClose.addEventListener("click", function (e) {
+        e.stopPropagation();
+        popupOverlay.classList.remove("active");
+      });
+
+      // 点击弹窗外部区域也关闭
+      popupOverlay.addEventListener("click", function (e) {
+        if (e.target === popupOverlay) {
+          popupOverlay.classList.remove("active");
+        }
+      });
+    </script>
   </body>
 </html>
